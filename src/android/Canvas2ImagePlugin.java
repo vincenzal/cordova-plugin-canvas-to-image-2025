@@ -42,6 +42,9 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 			String extension = data.optString(1);
 			String quality = data.optString(2);
 			String picfolder= Environment.DIRECTORY_PICTURES;
+
+			//callbackContext.error( picfolder );
+
 			boolean add2Galery=true;
 			if (data.length()>3) picfolder=data.optString(3);
 			if (data.length()>4) add2Galery=Boolean.valueOf(data.optString(4));
@@ -58,7 +61,8 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 			} else {
 				
 				// Save the image
-				File imageFile = savePhoto(bmp,extension,quality,picfolder);
+				File imageFile = savePhoto(bmp,extension,quality,picfolder,callbackContext);				
+
 				if (imageFile == null)
 					callbackContext.error("Error while saving image");
 				
@@ -83,7 +87,7 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 		} catch (Exception e){}		
 		return result;
 	}
-	private File savePhoto(Bitmap bmp,String extension,String strQuality,String picfolder) {
+	private File savePhoto(Bitmap bmp,String extension,String strQuality,String picfolder,CallbackContext callbackContext) {
 		int quality=getQuality(strQuality);
 		File retVal = null;
 		
@@ -96,30 +100,20 @@ public class Canvas2ImagePlugin extends CordovaPlugin {
 					+ c.get(Calendar.MINUTE)
 					+ c.get(Calendar.SECOND);
 
-			String deviceVersion = Build.VERSION.RELEASE;
-			Log.i("Canvas2ImagePlugin", "Android version " + deviceVersion);
-			int check = deviceVersion.compareTo("2.3.3");
-
 			File folder;
 			/*
-			 * File path = Environment.getExternalStoragePublicDirectory(
-			 * Environment.DIRECTORY_PICTURES ); //this throws error in Android
-			 * 2.2
+			 * works only Android >= 2.3.3 
 			 */
-			if (check >= 1) {
-				if (picfolder == Environment.DIRECTORY_PICTURES){
-					folder = Environment
-	//					.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-						.getExternalStoragePublicDirectory(picfolder);
-				}
-				else{
-					folder = new File(picfolder);
-				}
-				if(!folder.exists()) {
-					folder.mkdirs();
-				}
-			} else {
-				folder = Environment.getExternalStorageDirectory();
+
+			if (picfolder == Environment.DIRECTORY_PICTURES){
+				folder = Environment
+					.getExternalStoragePublicDirectory(picfolder);
+			}
+			else{
+				folder = new File(picfolder);
+			}
+			if(!folder.exists()) {
+				folder.mkdirs();
 			}
 			
 			File imageFile = new File(folder, "c2i_" + date.toString() + extension);
